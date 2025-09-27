@@ -1,0 +1,370 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  username  String?  @unique
+  firstName String?
+  lastName  String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Subscription and usage
+  subscriptionTier String   @default("free") // free, pro, enterprise
+  subscriptionEnds DateTime?
+  usageLimit       Int      @default(10000) // words per month
+  currentUsage     Int      @default(0)
+  lastUsageReset   DateTime @default(now())
+
+  // Relations
+  projects    Project[]
+  characters  Character[]
+  worlds      World[]
+  research    Research[]
+  notes       Note[]
+  feedback    Feedback[]
+  comments    Comment[]
+  highlights  Highlight[]
+  versions    Version[]
+  collaborators ProjectCollaborator[]
+  chats       Chat[]
+  researchFiles ResearchFile[]
+  aiModels    AIModel[]
+  files       File[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  genre       String?
+  status      String   @default("draft") // draft, published, archived
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Author
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Content
+  content     String?
+  wordCount   Int      @default(0)
+  characterCount Int   @default(0)
+
+  // Relations
+  characters     Character[]
+  worlds         World[]
+  research       Research[]
+  notes          Note[]
+  feedback       Feedback[]
+  comments       Comment[]
+  highlights     Highlight[]
+  versions       Version[]
+  collaborators  ProjectCollaborator[]
+  chapters       Chapter[]
+  chats          Chat[]
+  researchFiles  ResearchFile[]
+  files          File[]
+
+  @@map("projects")
+}
+
+model Chapter {
+  id          String   @id @default(cuid())
+  title       String
+  content     String?
+  order       Int
+  wordCount   Int      @default(0)
+  characterCount Int   @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Relations
+  comments   Comment[]
+  highlights Highlight[]
+  versions   Version[]
+
+  @@map("chapters")
+}
+
+model Character {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  role        String? // protagonist, antagonist, supporting, etc.
+  age         Int?
+  appearance  String?
+  personality String?
+  background  String?
+  motivation  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("characters")
+}
+
+model World {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String? // fantasy, sci-fi, contemporary, etc.
+  rules       String?
+  history     String?
+  geography   String?
+  culture     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("worlds")
+}
+
+model Research {
+  id          String   @id @default(cuid())
+  title       String
+  content     String?
+  source      String?
+  url         String?
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("research")
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  content     String?
+  type        String   @default("note") // note, sticky, reminder
+  color       String? // for sticky notes
+  position    Json? // for positioning sticky notes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("notes")
+}
+
+model Feedback {
+  id          String   @id @default(cuid())
+  content     String
+  type        String   @default("general") // general, plot, character, style, etc.
+  rating      Int? // 1-5 rating
+  isResolved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("feedback")
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  content     String
+  position    Json? // position in text for inline comments
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  chapterId String?
+  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Highlight {
+  id          String   @id @default(cuid())
+  content     String
+  position    Json // position in text
+  color       String? // highlight color
+  note        String? // note attached to highlight
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  chapterId String?
+  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@map("highlights")
+}
+
+model Version {
+  id          String   @id @default(cuid())
+  title       String?
+  content     String
+  wordCount   Int
+  characterCount Int
+  changes     String? // description of changes
+  createdAt   DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  chapterId String?
+  chapter   Chapter? @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@map("versions")
+}
+
+model ProjectCollaborator {
+  id          String   @id @default(cuid())
+  role        String   @default("viewer") // viewer, editor, co-author
+  permissions Json // specific permissions
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@map("project_collaborators")
+}
+
+model AIModel {
+  id          String   @id @default(cuid())
+  name        String
+  provider    String // openai, anthropic, google, local
+  modelId     String // actual model identifier
+  apiKey      String? // encrypted
+  baseUrl     String? // for custom endpoints
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_models")
+}
+
+model File {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int
+  path        String
+  url         String?
+  createdAt   DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("files")
+}
+
+model Chat {
+  id          String   @id @default(cuid())
+  title       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  messages    ChatMessage[]
+
+  @@map("chats")
+}
+
+model ChatMessage {
+  id          String   @id @default(cuid())
+  role        String   // 'user' | 'assistant'
+  content     String
+  createdAt   DateTime @default(now())
+
+  chatId String
+  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model ResearchFile {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  fileType    String   // 'image' | 'audio' | 'video' | 'text' | 'link' | 'document'
+  content     String?  // For text content or links
+  fileUrl     String?  // For uploaded files
+  metadata    Json?    // Additional metadata like dimensions, duration, etc.
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("research_files")
+}
