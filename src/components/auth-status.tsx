@@ -14,9 +14,9 @@ export function AuthStatus() {
 
   if (!user) {
     return (
-      <div className="p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
-        <h3 className="font-semibold text-yellow-800 mb-2">Not Signed In</h3>
-        <p className="text-yellow-700 mb-4">You are not currently signed in.</p>
+      <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg">
+        <h3 className="font-semibold text-rose-900 mb-2">Not Signed In</h3>
+        <p className="text-rose-800 mb-4">You are not currently signed in.</p>
         <div className="flex gap-2">
           <Button onClick={() => router.push('/sign-in')}>
             Sign In

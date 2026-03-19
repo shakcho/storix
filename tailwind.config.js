@@ -15,6 +15,19 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        // Default app fonts
+        lato: ['var(--font-lato)', 'sans-serif'],
+        lustria: ['var(--font-lustria)', 'serif'],
+        // Story writing fonts
+        josefin: ['var(--font-josefin)', 'sans-serif'],
+        playfair: ['var(--font-playfair)', 'serif'],
+        grotesk: ['var(--font-grotesk)', 'sans-serif'],
+        epilogue: ['var(--font-epilogue)', 'sans-serif'],
+        garamond: ['var(--font-garamond)', 'serif'],
+        stardom: ['var(--font-stardom)', 'Georgia', 'serif'],
+        melodrama: ['var(--font-melodrama)', 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

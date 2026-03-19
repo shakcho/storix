@@ -7,12 +7,15 @@ import CharacterCount from '@tiptap/extension-character-count'
 import Typography from '@tiptap/extension-typography'
 import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
+import { MathExtension } from './extensions/math-extension'
+import { MermaidExtension } from './extensions/mermaid-extension'
+import 'katex/dist/katex.min.css'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { 
-  Bold, 
-  Italic, 
-  Underline, 
+import {
+  Bold,
+  Italic,
+  Underline,
   Strikethrough,
   List,
   ListOrdered,
@@ -32,7 +35,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback, useRef } from 'react'
 import { projectApi } from '@/lib/api'
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -40,7 +43,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel
 } from '@/components/ui/dropdown-menu'
-import { 
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -51,14 +54,15 @@ import {
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Textarea } from '@/components/ui/textarea'
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Sparkles, PenTool, RefreshCw, FileText } from 'lucide-react'
+import { Sparkles, PenTool, RefreshCw, FileText, Sigma, Network, Download } from 'lucide-react'
+import { useExport } from '@/hooks/use-export'
 
 interface AIOptions {
   creativity: number
@@ -79,8 +83,8 @@ interface RichTextEditorProps {
   enableAutoSave?: boolean
 }
 
-export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({ 
-  content = '', 
+export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
+  content = '',
   placeholder = 'Start writing...',
   onChange,
   onWordCountChange,
@@ -105,13 +109,14 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const { exportToPdf, exportToEpub, isExporting } = useExport()
 
   const autoSave = useCallback(async (content: string) => {
     if (!enableAutoSave || !projectId || !content) return
 
     try {
       setIsSaving(true)
-      
+
       if (chapterId) {
         // Save to chapter
         await projectApi.updateChapter(projectId, chapterId, { content })
@@ -119,7 +124,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
         // Save to project content
         await projectApi.updateContent(projectId, content)
       }
-      
+
       setLastSaved(new Date())
     } catch (error) {
       console.error('Error auto-saving:', error)
@@ -132,7 +137,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
     }
-    
+
     saveTimeoutRef.current = setTimeout(() => {
       autoSave(content)
     }, 2000) // Save after 2 seconds of inactivity
@@ -163,6 +168,8 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           class: 'max-w-full h-auto rounded-lg',
         },
       }),
+      MathExtension,
+      MermaidExtension,
     ],
     content,
     editable,
@@ -170,10 +177,10 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
     onUpdate: ({ editor }) => {
       const html = editor.getHTML()
       const wordCount = editor.storage.characterCount.words()
-      
+
       onChange?.(html)
       onWordCountChange?.(wordCount)
-      
+
       // Auto-save if enabled
       if (enableAutoSave && projectId) {
         debouncedSave(html)
@@ -182,30 +189,30 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
     onSelectionUpdate: ({ editor }) => {
       const { from, to } = editor.state.selection
       const isEmpty = from === to
-      
+
       if (!isEmpty && editable) {
         // Get selected text
         const selectedText = editor.state.doc.textBetween(from, to, ' ')
         setSelectedText(selectedText)
-        
+
         setShowFloatingToolbar(true)
-        
+
         // Calculate toolbar position
         const { view } = editor
         const { state } = view
         const { selection } = state
         const { $from } = selection
-        
+
         const coords = view.coordsAtPos($from.pos)
         const editorRect = view.dom.getBoundingClientRect()
-        
+
         // Calculate toolbar position closer to selection
         const toolbarHeight = 40 // Approximate toolbar height
         const toolbarWidth = 400 // Width for all formatting buttons + AI menu
-        
+
         let top = coords.top - editorRect.top - toolbarHeight - 10
         let left = coords.left - editorRect.left - (toolbarWidth / 2)
-        
+
         // Boundary checks
         if (top < 10) {
           top = coords.bottom - editorRect.top + 10 // Show below selection if too close to top
@@ -215,7 +222,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
         } else if (left + toolbarWidth > editorRect.width - 10) {
           left = editorRect.width - toolbarWidth - 10
         }
-        
+
         setToolbarPosition({ top, left })
       } else {
         setShowFloatingToolbar(false)
@@ -229,14 +236,14 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
   // AI Service Functions
   const callAIService = async (action: 'write' | 'rewrite' | 'describe', text: string, options: AIOptions) => {
     setIsAILoading(true)
-    
+
     try {
       // Simulate AI API call - replace with actual API call
       const prompt = generatePrompt(action, text, options)
-      
+
       // Mock response - replace with actual API call
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
+
       let response = ''
       switch (action) {
         case 'write':
@@ -249,13 +256,13 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           response = `Here's a detailed description based on: "${text}". I've expanded this into a rich, vivid description that brings the scene to life with sensory details and atmospheric elements.`
           break
       }
-      
+
       // Replace selected text with AI response
       if (editor) {
         const { from, to } = editor.state.selection
         editor.chain().focus().deleteRange({ from, to }).insertContent(response).run()
       }
-      
+
     } catch (error) {
       console.error('AI service error:', error)
       // Handle error - could show toast notification
@@ -267,16 +274,16 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
   }
 
   const generatePrompt = (action: 'write' | 'rewrite' | 'describe', text: string, options: AIOptions) => {
-    const creativityLevel = options.creativity === 1 ? 'very conservative' : 
-                          options.creativity === 10 ? 'highly creative' : 
-                          options.creativity <= 3 ? 'conservative' :
-                          options.creativity <= 7 ? 'balanced' : 'creative'
-    
+    const creativityLevel = options.creativity === 1 ? 'very conservative' :
+      options.creativity === 10 ? 'highly creative' :
+        options.creativity <= 3 ? 'conservative' :
+          options.creativity <= 7 ? 'balanced' : 'creative'
+
     const proseStyle = options.proseMode === 'formal' ? 'formal academic style' :
-                      options.proseMode === 'casual' ? 'casual conversational style' :
-                      options.proseMode === 'poetic' ? 'poetic lyrical style' :
-                      'balanced professional style'
-    
+      options.proseMode === 'casual' ? 'casual conversational style' :
+        options.proseMode === 'poetic' ? 'poetic lyrical style' :
+          'balanced professional style'
+
     let basePrompt = ''
     switch (action) {
       case 'write':
@@ -289,7 +296,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
         basePrompt = `Create a detailed description based on: "${text}". `
         break
     }
-    
+
     return `${basePrompt}Use a ${creativityLevel} approach with ${proseStyle}. Target approximately ${options.length} words. ${options.keyDetails ? `Additional context: ${options.keyDetails}` : ''}`
   }
 
@@ -312,10 +319,10 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
     )
   }
 
-  const ToolbarButton = ({ 
-    onClick, 
-    isActive = false, 
-    disabled = false, 
+  const ToolbarButton = ({
+    onClick,
+    isActive = false,
+    disabled = false,
     children,
     className
   }: {
@@ -354,7 +361,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           >
             <Bold className="h-4 w-4" />
           </ToolbarButton>
-          
+
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleItalic().run()}
             isActive={editor.isActive('italic')}
@@ -362,7 +369,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           >
             <Italic className="h-4 w-4" />
           </ToolbarButton>
-          
+
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleStrike().run()}
             isActive={editor.isActive('strike')}
@@ -370,9 +377,9 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           >
             <Strikethrough className="h-4 w-4" />
           </ToolbarButton>
-          
+
           <div className="w-px h-6 bg-border mx-1" />
-          
+
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
             isActive={editor.isActive('heading', { level: 1 })}
@@ -380,7 +387,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           >
             <Heading1 className="h-4 w-4" />
           </ToolbarButton>
-          
+
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
             isActive={editor.isActive('heading', { level: 2 })}
@@ -388,7 +395,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           >
             <Heading2 className="h-4 w-4" />
           </ToolbarButton>
-          
+
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
             isActive={editor.isActive('heading', { level: 3 })}
@@ -396,9 +403,9 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           >
             <Heading3 className="h-4 w-4" />
           </ToolbarButton>
-          
+
           <div className="w-px h-6 bg-border mx-1" />
-          
+
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             isActive={editor.isActive('bulletList')}
@@ -406,7 +413,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           >
             <List className="h-4 w-4" />
           </ToolbarButton>
-          
+
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
             isActive={editor.isActive('orderedList')}
@@ -414,7 +421,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           >
             <ListOrdered className="h-4 w-4" />
           </ToolbarButton>
-          
+
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
             isActive={editor.isActive('blockquote')}
@@ -422,9 +429,9 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           >
             <Quote className="h-4 w-4" />
           </ToolbarButton>
-          
+
           <div className="w-px h-6 bg-border mx-1" />
-          
+
           <ToolbarButton
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().undo()}
@@ -432,7 +439,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           >
             <Undo className="h-4 w-4" />
           </ToolbarButton>
-          
+
           <ToolbarButton
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().redo()}
@@ -440,9 +447,80 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           >
             <Redo className="h-4 w-4" />
           </ToolbarButton>
-          
+
           <div className="w-px h-6 bg-border mx-1" />
-          
+
+          <ToolbarButton
+            onClick={() => {
+              const latex = prompt('Enter LaTeX equation:', 'E = mc^2')
+              if (latex) {
+                editor.chain().focus().insertContent({
+                  type: 'math',
+                  attrs: { latex }
+                }).run()
+              }
+            }}
+            isActive={editor.isActive('math')}
+            className="text-popover-foreground hover:bg-accent"
+          >
+            <Sigma className="h-4 w-4" />
+          </ToolbarButton>
+
+          <ToolbarButton
+            onClick={() => {
+              editor.chain().focus().insertContent({
+                type: 'mermaid',
+                attrs: { code: 'graph TD;\nA[Start] --> B[End];' }
+              }).run()
+            }}
+            isActive={editor.isActive('mermaid')}
+            className="text-popover-foreground hover:bg-accent"
+          >
+            <Network className="h-4 w-4" />
+          </ToolbarButton>
+
+          <div className="w-px h-6 bg-border mx-1" />
+
+          {/* Export Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-popover-foreground hover:bg-accent"
+                disabled={isExporting}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel>Export</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => {
+                const content = editor.getHTML()
+                exportToPdf('editor-content', {
+                  title: 'My Document',
+                  author: 'Me',
+                  watermark: 'DRAFT'
+                })
+              }}>
+                Export as PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                const content = editor.getHTML()
+                exportToEpub(content, {
+                  title: 'My Document',
+                  author: 'Me',
+                  watermark: 'DRAFT'
+                })
+              }}>
+                Export as EPUB
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <div className="w-px h-6 bg-border mx-1" />
+
           {/* AI Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -476,7 +554,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           </DropdownMenu>
         </div>
       )}
-      
+
       {/* Toolbar Caret */}
       {editable && showFloatingToolbar && (
         <div
@@ -498,7 +576,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
               AI {aiAction === 'write' ? 'Write' : aiAction === 'rewrite' ? 'Rewrite' : 'Describe'} Options
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-6 py-4">
             {/* Selected Text Preview */}
             <div className="space-y-2">
@@ -578,7 +656,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
             <Button variant="outline" onClick={() => setShowAIOptions(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={() => aiAction && callAIService(aiAction, selectedText, aiOptions)}
               disabled={isAILoading || !selectedText.trim()}
             >
@@ -594,15 +672,15 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* Editor Content */}
-      <div className="flex-1 overflow-auto">
-        <EditorContent 
-          editor={editor} 
+      <div className="flex-1 overflow-auto" id="editor-content">
+        <EditorContent
+          editor={editor}
           className="prose prose-sm max-w-none focus:outline-none h-full [&_.ProseMirror]:outline-none [&_.ProseMirror]:focus:outline-none [&_.ProseMirror]:min-h-full [&_.ProseMirror]:cursor-text [&_.ProseMirror]:h-full [&_.ProseMirror]:p-4 [&_.ProseMirror]:m-0"
         />
       </div>
-      
+
       {/* Status Bar */}
       {editable && (
         <div className="border-t border-border px-4 py-2 flex items-center justify-between text-sm text-muted-foreground flex-shrink-0">
@@ -612,7 +690,7 @@ export const RichTextEditor = forwardRef<any, RichTextEditorProps>(({
           </div>
           <div className="flex items-center gap-2">
             {isSaving ? (
-              <span className="text-yellow-600">Saving...</span>
+              <span className="text-rose-500">Saving...</span>
             ) : lastSaved ? (
               <span className="text-primary">✓ Saved</span>
             ) : (

@@ -4,48 +4,61 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Light theme - minimal since we focus on dark */
+    --background: 40 10% 97%;
+    --foreground: 30 8% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 30 8% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --popover-foreground: 30 8% 12%;
+    --primary: 350 50% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 8% 92%;
+    --secondary-foreground: 30 8% 12%;
+    --muted: 40 8% 92%;
+    --muted-foreground: 30 5% 45%;
+    --accent: 40 12% 90%;
+    --accent-foreground: 30 8% 12%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 40 10% 98%;
+    --border: 40 8% 88%;
+    --input: 40 8% 88%;
+    --ring: 350 50% 60%;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    /* Creative Writing Dark Theme - Warm, sophisticated */
+    --background: 30 8% 8%;
+    --foreground: 45 10% 95%;
+    --card: 30 8% 12%;
+    --card-foreground: 45 10% 95%;
+    --popover: 30 8% 12%;
+    --popover-foreground: 45 10% 95%;
+    --primary: 43 74% 66%;
+    --primary-foreground: 30 8% 8%;
+    --secondary: 30 8% 18%;
+    --secondary-foreground: 45 10% 95%;
+    --muted: 30 8% 18%;
+    --muted-foreground: 45 8% 65%;
+    --accent: 43 74% 66%;
+    --accent-foreground: 30 8% 8%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 45 10% 95%;
+    --border: 30 8% 22%;
+    --input: 30 8% 22%;
+    --ring: 43 74% 66%;
+    --chart-1: 43 74% 66%;
+    --chart-2: 38 70% 62%;
+    --chart-3: 48 78% 70%;
+    --chart-4: 33 68% 60%;
+    --chart-5: 53 72% 64%;
+    --radius: 0.75rem;
+    
+    /* Custom writing-specific colors */
+    --writing-glow: 43 74% 66%;
+    --writing-accent: 43 70% 60%;
+    --subtle-highlight: 30 8% 22%;
   }
 }
 
@@ -55,7 +68,96 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-lato), sans-serif;
+    font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+  
+  /* Default application title font */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-lustria), serif;
+    letter-spacing: -0.02em;
+  }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Selection styling for creative writing feel */
+  ::selection {
+    background: hsl(var(--primary) / 0.2);
+    color: hsl(var(--foreground));
+  }
+}
+  
+  /* Font family utilities */
+  .font-josefin {
+    font-family: var(--font-josefin), sans-serif;
+  }
+  
+  .font-lato {
+    font-family: var(--font-lato), sans-serif;
+  }
+  
+  .font-lustria {
+    font-family: var(--font-lustria), serif;
+  }
+  
+  .font-playfair {
+    font-family: var(--font-playfair), serif;
+  }
+  
+  .font-grotesk {
+    font-family: var(--font-grotesk), sans-serif;
+  }
+  
+  .font-epilogue {
+    font-family: var(--font-epilogue), sans-serif;
+  }
+  
+  .font-garamond {
+    font-family: var(--font-garamond), serif;
+  }
+  
+  .font-stardom {
+    font-family: var(--font-stardom), Georgia, serif;
+  }
+  
+  .font-melodrama {
+    font-family: var(--font-melodrama), system-ui, sans-serif;
+  }
+
+/* Custom animations */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s infinite linear;
+  background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.03) 50%, transparent 100%);
+  background-size: 1000px 100%;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
 }
 
 /* Custom styles for the writing editor */
@@ -63,45 +165,76 @@
   @apply min-h-screen bg-background;
 }
 
-.writing-editor .ProseMirror {
-  @apply outline-none p-6 text-foreground;
-  font-family: 'Georgia', 'Times New Roman', serif;
-  line-height: 1.8;
-  font-size: 16px;
+/* Story content uses selected font pairing */
+.story-content .ProseMirror,
+.prose-writer .ProseMirror {
+  @apply outline-none text-foreground;
+  line-height: 2;
+  font-size: 18px;
+  min-height: 500px;
 }
 
-.writing-editor .ProseMirror h1 {
-  @apply text-3xl font-bold mb-4 mt-8;
+/* Enhanced prose styling for writing */
+.prose-writer .ProseMirror {
+  @apply text-foreground/90;
 }
 
-.writing-editor .ProseMirror h2 {
-  @apply text-2xl font-semibold mb-3 mt-6;
+.prose-writer .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+  font-style: italic;
+  opacity: 0.5;
 }
 
-.writing-editor .ProseMirror h3 {
-  @apply text-xl font-medium mb-2 mt-4;
+.prose-writer .ProseMirror:focus {
+  @apply outline-none;
 }
 
-.writing-editor .ProseMirror p {
-  @apply mb-4;
+.story-content .ProseMirror h1,
+.story-content h1,
+.prose-writer .ProseMirror h1 {
+  @apply text-4xl font-bold mb-6 mt-12 text-foreground leading-tight tracking-tight;
 }
 
-.writing-editor .ProseMirror blockquote {
-  @apply border-l-4 border-primary pl-4 italic my-4;
+.story-content .ProseMirror h2,
+.story-content h2,
+.prose-writer .ProseMirror h2 {
+  @apply text-3xl font-semibold mb-5 mt-10 text-foreground leading-tight tracking-tight;
 }
 
-.writing-editor .ProseMirror ul,
-.writing-editor .ProseMirror ol {
+.story-content .ProseMirror h3,
+.story-content h3,
+.prose-writer .ProseMirror h3 {
+  @apply text-2xl font-medium mb-4 mt-8 text-foreground leading-tight;
+}
+
+.story-content .ProseMirror p,
+.story-content p,
+.prose-writer .ProseMirror p {
+  @apply mb-6 leading-loose;
+}
+
+.story-content .ProseMirror blockquote,
+.story-content blockquote,
+.prose-writer .ProseMirror blockquote {
+  @apply border-l-4 border-primary/50 pl-6 italic my-6 text-muted-foreground;
+}
+
+.story-content .ProseMirror ul,
+.story-content .ProseMirror ol {
   @apply pl-6 mb-4;
 }
 
-.writing-editor .ProseMirror li {
+.story-content .ProseMirror li {
   @apply mb-2;
 }
 
 /* Sticky notes styles */
 .sticky-note {
-  @apply absolute bg-yellow-200 border border-yellow-300 rounded-lg p-3 shadow-lg;
+  @apply absolute bg-rose-50 border border-rose-200 rounded-lg p-3 shadow-lg;
   min-width: 200px;
   min-height: 150px;
   resize: both;
@@ -109,7 +242,7 @@
 }
 
 .sticky-note.dark {
-  @apply bg-yellow-800 border-yellow-700 text-yellow-100;
+  @apply bg-rose-900/30 border-rose-800/40 text-rose-50;
 }
 
 /* Collaboration cursors */
@@ -128,7 +261,7 @@
 
 /* Highlight styles */
 .highlight {
-  @apply bg-yellow-200 dark:bg-yellow-800;
+  @apply bg-rose-50 dark:bg-rose-900/30;
   padding: 2px 4px;
   border-radius: 2px;
 }

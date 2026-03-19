@@ -54,13 +54,13 @@ export function useProjects(options: UseProjectsOptions = {}) {
         page: page.toString(),
         limit: limit.toString(),
       })
-      
+
       if (status) params.append('status', status)
       if (genre) params.append('genre', genre)
-      
+
       const queryString = params.toString()
       const endpoint = queryString ? `/projects?${queryString}` : '/projects'
-      
+
       return projectApi.getAll(endpoint, token || undefined) as Promise<ProjectsResponse>
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -70,7 +70,7 @@ export function useProjects(options: UseProjectsOptions = {}) {
 
 export function useProject(id: string) {
   const { getToken } = useAuth()
-  
+
   return useQuery({
     queryKey: ['project', id],
     queryFn: async () => {
@@ -91,7 +91,7 @@ export interface CreateProjectData {
 export function useCreateProject() {
   const { getToken } = useAuth()
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (data: CreateProjectData): Promise<Project> => {
       const token = await getToken()
@@ -103,7 +103,7 @@ export function useCreateProject() {
     onSuccess: (newProject) => {
       // Invalidate and refetch projects list
       queryClient.invalidateQueries({ queryKey: ['projects'] })
-      
+
       // Optionally add the new project to the cache
       queryClient.setQueryData(['project', newProject.id], newProject)
     },
@@ -124,7 +124,7 @@ export interface UpdateProjectData {
 export function useUpdateProject() {
   const { getToken } = useAuth()
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateProjectData }): Promise<Project> => {
       const token = await getToken()
@@ -136,7 +136,7 @@ export function useUpdateProject() {
     onSuccess: (updatedProject) => {
       // Update the specific project in cache
       queryClient.setQueryData(['project', updatedProject.id], updatedProject)
-      
+
       // Invalidate projects list to reflect changes
       queryClient.invalidateQueries({ queryKey: ['projects'] })
     },
@@ -149,19 +149,19 @@ export function useUpdateProject() {
 export function useDeleteProject() {
   const { getToken } = useAuth()
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
       const token = await getToken()
       if (!token) {
         throw new Error('Authentication required')
       }
-      return projectApi.delete(id, token)
+      return projectApi.delete(id, token) as unknown as Promise<void>
     },
     onSuccess: (_, projectId) => {
       // Remove the project from cache
       queryClient.removeQueries({ queryKey: ['project', projectId] })
-      
+
       // Invalidate projects list to reflect changes
       queryClient.invalidateQueries({ queryKey: ['projects'] })
     },

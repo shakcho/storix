@@ -132,15 +132,18 @@ export class ProjectController {
   static async getProject(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.userId;
+      const clerkId = req.userId;
 
-      if (!userId) {
+      if (!clerkId) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
       if (!id) {
         return res.status(400).json({ error: 'Project ID is required' });
       }
+
+      // Get or create user from Clerk ID
+      const userId = await getOrCreateUser(clerkId, req.user);
 
       const project = await prisma.project.findFirst({
         where: {
@@ -182,12 +185,15 @@ export class ProjectController {
   static async updateProject(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.userId;
+      const clerkId = req.userId;
       const updates = req.body;
 
-      if (!userId) {
+      if (!clerkId) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
+
+      // Get or create user from Clerk ID
+      const userId = await getOrCreateUser(clerkId, req.user);
 
       if (!id) {
         return res.status(400).json({ error: 'Project ID is required' });
@@ -236,11 +242,14 @@ export class ProjectController {
   static async deleteProject(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.userId;
+      const clerkId = req.userId;
 
-      if (!userId) {
+      if (!clerkId) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
+
+      // Get or create user from Clerk ID
+      const userId = await getOrCreateUser(clerkId, req.user);
 
       if (!id) {
         return res.status(400).json({ error: 'Project ID is required' });
@@ -273,11 +282,14 @@ export class ProjectController {
   static async getProjectContent(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.userId;
+      const clerkId = req.userId;
 
-      if (!userId) {
+      if (!clerkId) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
+
+      // Get or create user from Clerk ID
+      const userId = await getOrCreateUser(clerkId, req.user);
 
       if (!id) {
         return res.status(400).json({ error: 'Project ID is required' });
@@ -309,12 +321,15 @@ export class ProjectController {
   static async updateProjectContent(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.userId;
+      const clerkId = req.userId;
       const { content } = req.body;
 
-      if (!userId) {
+      if (!clerkId) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
+
+      // Get or create user from Clerk ID
+      const userId = await getOrCreateUser(clerkId, req.user);
 
       if (!id) {
         return res.status(400).json({ error: 'Project ID is required' });
@@ -477,11 +492,14 @@ export class ProjectController {
   static async getChapter(req: AuthenticatedRequest, res: Response) {
     try {
       const { id, chapterId } = req.params;
-      const userId = req.userId;
+      const clerkId = req.userId;
 
-      if (!userId) {
+      if (!clerkId) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
+
+      // Get or create user from Clerk ID
+      const userId = await getOrCreateUser(clerkId, req.user);
 
       if (!id || !chapterId) {
         return res.status(400).json({ error: 'Project ID and Chapter ID are required' });
@@ -523,12 +541,15 @@ export class ProjectController {
   static async updateChapter(req: AuthenticatedRequest, res: Response) {
     try {
       const { id, chapterId } = req.params;
-      const userId = req.userId;
+      const clerkId = req.userId;
       const updates = req.body;
 
-      if (!userId) {
+      if (!clerkId) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
+
+      // Get or create user from Clerk ID
+      const userId = await getOrCreateUser(clerkId, req.user);
 
       if (!id || !chapterId) {
         return res.status(400).json({ error: 'Project ID and Chapter ID are required' });
@@ -605,11 +626,14 @@ export class ProjectController {
   static async deleteChapter(req: AuthenticatedRequest, res: Response) {
     try {
       const { id, chapterId } = req.params;
-      const userId = req.userId;
+      const clerkId = req.userId;
 
-      if (!userId) {
+      if (!clerkId) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
+
+      // Get or create user from Clerk ID
+      const userId = await getOrCreateUser(clerkId, req.user);
 
       if (!id || !chapterId) {
         return res.status(400).json({ error: 'Project ID and Chapter ID are required' });

@@ -4,9 +4,9 @@ import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { chatApi, ApiError } from '@/lib/api'
-import { 
-  Send, 
-  Plus, 
+import {
+  Send,
+  Plus,
   MoreHorizontal,
   Bot,
   User,
@@ -81,22 +81,22 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
 
   const loadConversations = async () => {
     if (!projectId) return
-    
+
     try {
       setIsLoading(true)
       const chats = await chatApi.getProjectChats(projectId)
-      
+
       // Transform backend data to frontend format
-      const transformedChats: Conversation[] = chats.map((chat: any) => ({
+      const transformedChats: Conversation[] = (chats as any[]).map((chat: any) => ({
         id: chat.id,
         title: chat.title,
         messages: chat.messages || [],
         createdAt: new Date(chat.createdAt),
         updatedAt: new Date(chat.updatedAt)
       }))
-      
+
       setConversations(transformedChats)
-      
+
       // Set first chat as active if none is selected
       if (transformedChats.length > 0 && !activeConversationId) {
         setActiveConversationId(transformedChats[0].id)
@@ -122,21 +122,21 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
 
   const createNewConversation = async () => {
     if (!projectId) return
-    
+
     try {
       const newChat = await chatApi.create({
         projectId,
         title: 'New Chat'
       })
-      
+
       const newConversation: Conversation = {
-        id: newChat.id,
-        title: newChat.title,
-        messages: newChat.messages || [],
-        createdAt: new Date(newChat.createdAt),
-        updatedAt: new Date(newChat.updatedAt)
+        id: (newChat as any).id,
+        title: (newChat as any).title,
+        messages: (newChat as any).messages || [],
+        createdAt: new Date((newChat as any).createdAt),
+        updatedAt: new Date((newChat as any).updatedAt)
       }
-      
+
       setConversations(prev => [newConversation, ...prev])
       setActiveConversationId(newConversation.id)
     } catch (error) {
@@ -155,8 +155,8 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
     }
 
     // Update conversation with user message
-    setConversations(prev => prev.map(conv => 
-      conv.id === activeConversationId 
+    setConversations(prev => prev.map(conv =>
+      conv.id === activeConversationId
         ? { ...conv, messages: [...conv.messages, userMessage], updatedAt: new Date() }
         : conv
     ))
@@ -167,7 +167,7 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
     try {
       // Send message to backend
       await chatApi.sendMessage(activeConversationId, content.trim())
-      
+
       // Simulate AI response (replace with actual AI service call)
       setTimeout(async () => {
         const aiMessage: ChatMessage = {
@@ -180,8 +180,8 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
         // Send AI response to backend
         await chatApi.sendMessage(activeConversationId, aiMessage.content, 'assistant')
 
-        setConversations(prev => prev.map(conv => 
-          conv.id === activeConversationId 
+        setConversations(prev => prev.map(conv =>
+          conv.id === activeConversationId
             ? { ...conv, messages: [...conv.messages, aiMessage], updatedAt: new Date() }
             : conv
         ))
@@ -206,11 +206,11 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
 
   const deleteConversation = async (conversationId: string) => {
     if (conversations.length <= 1) return
-    
+
     try {
       await chatApi.delete(conversationId)
       setConversations(prev => prev.filter(conv => conv.id !== conversationId))
-      
+
       if (conversationId === activeConversationId) {
         const remainingConversations = conversations.filter(conv => conv.id !== conversationId)
         setActiveConversationId(remainingConversations[0]?.id || null)
@@ -223,8 +223,8 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
   const updateConversationTitle = async (conversationId: string, newTitle: string) => {
     try {
       await chatApi.updateTitle(conversationId, newTitle.trim() || 'New Chat')
-      setConversations(prev => prev.map(conv => 
-        conv.id === conversationId 
+      setConversations(prev => prev.map(conv =>
+        conv.id === conversationId
           ? { ...conv, title: newTitle.trim() || 'New Chat' }
           : conv
       ))
@@ -245,14 +245,14 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
     setEditingTitle('')
   }
 
-  const filteredConversations = conversations.filter(conv => 
+  const filteredConversations = conversations.filter(conv =>
     conv.title.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const getRelativeTime = (date: Date) => {
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+
     if (diffInHours < 1) {
       const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
       return `${diffInMinutes}m`
@@ -268,13 +268,13 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
-    
+
     const groups: { [key: string]: Conversation[] } = {
       'Today': [],
       'Yesterday': [],
       'Previous': []
     }
-    
+
     convs.forEach(conv => {
       const convDate = new Date(conv.updatedAt)
       if (convDate >= today) {
@@ -285,7 +285,7 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
         groups['Previous'].push(conv)
       }
     })
-    
+
     return groups
   }
 
@@ -324,9 +324,9 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
 
   if (showHistory) {
     const groupedConversations = groupConversationsByDate(filteredConversations)
-    
+
     return (
-      <div 
+      <div
         className={cn("h-full flex flex-col bg-background border-l border-border relative", className)}
         style={{ width: `${width}px` }}
       >
@@ -366,7 +366,7 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
           <div className="p-4 space-y-6">
             {Object.entries(groupedConversations).map(([groupName, convs]) => {
               if (convs.length === 0) return null
-              
+
               return (
                 <div key={groupName}>
                   <h3 className="text-sm font-medium text-muted-foreground mb-3">{groupName}</h3>
@@ -415,7 +415,7 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
                             {getRelativeTime(conversation.updatedAt)}
                           </span>
                         </div>
-                        
+
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button
                             variant="ghost"
@@ -462,7 +462,7 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
   }
 
   return (
-    <div 
+    <div
       className={cn("h-full flex flex-col bg-background border-l border-border relative", className)}
       style={{ width: `${width}px` }}
     >
@@ -502,19 +502,19 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
                     <Bot className="h-4 w-4 text-primary" />
                   </div>
                 )}
-                
+
                 <div
                   className={cn(
                     "max-w-[80%] rounded-lg px-4 py-2",
-                    message.role === 'user' 
-                      ? "bg-primary text-primary-foreground" 
+                    message.role === 'user'
+                      ? "bg-primary text-primary-foreground"
                       : "bg-muted"
                   )}
                 >
                   <div className="text-sm whitespace-pre-wrap">
                     {formatMessage(message.content)}
                   </div>
-                  
+
                   {message.role === 'assistant' && (
                     <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => copyMessage(message.content)}>
@@ -540,7 +540,7 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
                 )}
               </div>
             ))}
-            
+
             {isTyping && (
               <div className="flex gap-3 justify-start">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -558,7 +558,7 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
         </div>
@@ -574,7 +574,7 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
               className="flex-1"
               disabled={isTyping}
             />
-            <Button 
+            <Button
               onClick={() => sendMessage(inputValue)}
               disabled={!inputValue.trim() || isTyping}
               size="sm"
@@ -582,7 +582,7 @@ export function AIChat({ className, width = 320, onWidthChange, projectId }: AIC
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          
+
           <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
             <span>Press Enter to send, Shift+Enter for new line</span>
             <span>AI can make mistakes. Check important info.</span>
